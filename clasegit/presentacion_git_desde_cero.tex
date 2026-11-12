@@ -1,0 +1,180 @@
+\documentclass[11pt, aspectratio=169]{beamer}
+\usepackage{fontspec}
+\usepackage[spanish, bidi=basic, provide=*]{babel}
+\babelfont{rm}{Noto Sans}
+\babelfont{sf}{Noto Sans} % Beamer utiliza sans-serif por defecto
+\babelfont{tt}{Noto Sans Mono}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\title{Git y GitHub desde Cero}
+\subtitle{Conceptos clave, flujos de trabajo y buenas prácticas}
+\author{Clase Introductoria}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{¿Qué son Git y GitHub?}
+    \begin{itemize}
+        \item \textbf{Git (Local):} Es un \textbf{sistema de control de versiones distribuido}. Sirve para gestionar cambios en proyectos, rastrear versiones del código y permitir colaborar con otros desarrolladores.
+        \item \textbf{GitHub (Nube):} Es una plataforma y servicio para alojar proyectos Git en la nube. Permite la colaboración en línea, visualización del control de versiones y el manejo centralizado de repositorios remotos.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Instalación y Configuración Básica}
+    \begin{itemize}
+        \item \textbf{Descargar:} Desde la web oficial \texttt{https://git-scm.com/}
+        \item \textbf{Verificar versión instalada:} \texttt{git --version}
+        \item \textbf{Configuración inicial (Global):} Git necesita saber quién eres para firmar tus \textit{commits}.
+        \begin{itemize}
+            \item \texttt{git config --global user.name "Tu Nombre"}
+            \item \texttt{git config --global user.email "tuemail@example.com"}
+        \end{itemize}
+        \item \textbf{Verificar tu configuración:} \texttt{git config --list}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{¿Por qué Git es ideal para programar?}
+    \begin{itemize}
+        \item \textbf{Texto Plano vs. Binarios:} Git está diseñado para rastrear cambios línea por línea en archivos de texto plano (como el código fuente: \texttt{.py}, \texttt{.java}, \texttt{.html}).
+        \item \textbf{Por qué es bueno para código:} Guarda \textit{diferencias} (deltas). Si cambias una palabra en 1000 líneas de código, Git solo guarda ese pequeño cambio. Permite ver exactamente qué línea se agregó o borró.
+        \item \textbf{Por qué es malo para otros archivos:} En archivos binarios (Imágenes, Videos, Word, PDFs), cambiar un detalle modifica todo el archivo interno. Git no puede leer líneas allí, por lo que guarda copias completas una y otra vez, haciendo que el repositorio se vuelva inmensamente pesado.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{El flujo de trabajo: Local vs. Remoto}
+    \begin{center}
+    \begin{tikzpicture}[
+        box/.style={draw, rounded corners, minimum width=2.5cm, minimum height=1.2cm, align=center, fill=blue!5},
+        arrow/.style={->, thick, >=latex}
+    ]
+    
+    % Nodos locales
+    \node[box] (wd) at (0,0) {Directorio\\de Trabajo};
+    \node[box] (st) at (4,0) {Área de\\Staging};
+    \node[box] (lr) at (8,0) {Repositorio\\Local};
+    
+    % Nodo remoto
+    \node[box, fill=green!10, text width=2.5cm] (rr) at (8,-3.5) {Repositorio\\Remoto\\(GitHub)};
+    
+    % Caja computadora local
+    \draw[dashed, draw=gray, rounded corners] (-1.5,-1) rectangle (9.5, 1.5);
+    \node[above, text=gray, font=\bfseries] at (4, 1.5) {Tu Computadora (Local)};
+    \node[right, text=green!60!black, font=\bfseries] at (9.5, -3.5) {La Nube};
+    
+    % Flechas
+    \draw[arrow] (wd) -- node[above, font=\small\ttfamily] {git add} (st);
+    \draw[arrow] (st) -- node[above, font=\small\ttfamily] {git commit} (lr);
+    \draw[arrow] (lr) -- node[right, font=\small\ttfamily] {git push} (rr);
+    \draw[arrow] (rr) -| node[below, near end, font=\small\ttfamily] {git pull} (wd);
+    
+    \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}{¿Qué pasa al subir archivos directamente a GitHub?}
+    \begin{itemize}
+        \item GitHub ofrece una interfaz web donde puedes arrastrar y soltar un archivo para "subirlo a la nube".
+        \item \textbf{¿Qué ocurre por detrás?} La interfaz web de GitHub automatiza el proceso. Al darle "Upload", GitHub internamente genera un \texttt{commit} automático con ese archivo y lo integra directamente al repositorio remoto.
+        \item \textbf{¿Hace un push?} Técnicamente no hay un \texttt{push} porque el cambio \textit{ya nació} en el repositorio remoto. Eres tú quien luego deberá hacer un \texttt{pull} en tu computadora para descargar ese archivo.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Autenticación: Par Clave Pública / Privada}
+    Para que tu computadora local y GitHub se comuniquen de forma segura sin pedirte usuario y contraseña en cada \texttt{push}, usamos \textbf{Claves SSH}:
+    \vspace{0.5cm}
+    \begin{itemize}
+        \item \textbf{Clave Pública:} Es como un candado. Se sube a la configuración de tu cuenta en GitHub. Cualquiera puede verla sin peligro.
+        \item \textbf{Clave Privada:} Es como la llave de ese candado. \textbf{Nunca sale de tu computadora} y jamás debes compartirla.
+    \end{itemize}
+    \vspace{0.5cm}
+    \textit{Mecanismo:} GitHub encripta el desafío con tu Clave Pública. Tu computadora local lo desencripta con tu Clave Privada, demostrando matemáticamente que eres el dueño de la cuenta.
+\end{frame}
+
+\begin{frame}{¿Qué es el archivo .gitignore?}
+    \begin{itemize}
+        \item Es un archivo de texto plano ubicado en la raíz de tu proyecto.
+        \item \textbf{Para qué sirve:} Le indica a Git qué archivos y carpetas \textbf{debe ignorar} y nunca incluir en un \texttt{add} ni subir a GitHub.
+        \item \textbf{Ejemplos de qué ignorar:}
+        \begin{itemize}
+            \item Contraseñas y claves de API (\texttt{.env}).
+            \item Archivos temporales o de sistema (\texttt{.DS\_Store}, \texttt{Thumbs.db}).
+            \item Dependencias descargables y muy pesadas (la carpeta \texttt{node\_modules/}).
+            \item Binarios generados al compilar código (carpetas \texttt{build/} o archivos \texttt{.exe}).
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Buenas Prácticas: Add, Commit y Push}
+    \begin{itemize}
+        \item \textbf{¿Cuándo hacer un \texttt{add}?} Cada vez que terminas un bloque lógico. Agrega archivos al Staging usando \texttt{git add}. Usa \texttt{git status} para verificar primero el estado de tu proyecto.
+        \item \textbf{¿Cuándo hacer un \texttt{commit}?} Cuando tienes una "unidad con sentido". Un commit es una \textbf{"fotografía"} de los cambios realizados. Usa \texttt{git commit -m "Mensaje"}.
+        \item \textbf{¿Es buena idea hacer \texttt{push} de código que no compila?} 
+        \begin{itemize}
+            \item \textbf{NO}, si estás en la rama principal (\texttt{main/master}). Romperás el código del resto del equipo.
+            \item \textbf{SÍ}, si estás trabajando en tu propia rama (\texttt{branch}) aislada al final del día para no perder tu progreso (como un respaldo en la nube).
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Ramas (Branches): Tu laboratorio personal}
+    \begin{itemize}
+        \item \textbf{¿Qué es un Branch?} Es una línea independiente de desarrollo paralela de tu proyecto.
+        \item \textbf{Comandos para ramas:}
+        \begin{itemize}
+            \item \texttt{git branch <nombre>}: Crea una nueva rama. (\texttt{git branch} a secas lista las ramas).
+            \item \texttt{git switch <rama>} o \texttt{git checkout <rama>}: Cambiar de rama.
+            \item \texttt{git checkout -b <rama>}: Crea la rama y te cambia a ella en un solo paso.
+        \end{itemize}
+        \item \textbf{Merge:} Es la integración de ramas. Permite unir el trabajo de tu rama aislada (una vez validado) de vuelta a la principal.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Comandos Iniciales y de Historial}
+    \begin{itemize}
+        \item \textbf{Conectando Local y Remoto:}
+        \begin{itemize}
+            \item \texttt{git init}: Inicializa un repositorio en un directorio vacío.
+            \item \texttt{git clone <URL>}: Clona (descarga) un repositorio existente de GitHub.
+            \item \texttt{git remote add origin <URL>}: Conecta tu repositorio local con un repositorio remoto.
+            \item \texttt{git push -u origin main}: Sube los cambios y configura la rama \texttt{main} por defecto.
+        \end{itemize}
+        \item \textbf{Historial y Reversión:}
+        \begin{itemize}
+            \item \texttt{git log}: Muestra la lista del historial de commits.
+            \item \texttt{git reset --hard <hashCommit>}: Resetea el repositorio a un commit específico y \textbf{elimina} todos los cambios posteriores (¡Usar con extrema precaución!).
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Conflictos: Trabajando con versiones viejas}
+    \textbf{¿Qué ocurre si trabajas con una versión vieja y hay cambios conflictivos?}
+    \vspace{0.2cm}
+    \begin{itemize}
+        \item Supongamos que no hiciste \texttt{pull} al iniciar el día. Tú modificas la línea 10, pero tu compañero también modificó la línea 10 y ya lo subió a GitHub.
+        \item Al intentar hacer un merge (o un \texttt{pull} / \texttt{push}), Git \textbf{pausará la operación}. No adivinará qué código es el correcto.
+        \item \textbf{Resolución:} Git marcará tu archivo de texto mostrando ambas versiones. Tú (como desarrollador) debes abrir el archivo, decidir manualmente qué código se queda, borrar las marcas, hacer un nuevo \texttt{add} y finalizar con un \texttt{commit} de resolución.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Colaboración en GitHub}
+    \begin{itemize}
+        \item \textbf{¿Cómo agregar un colaborador?} Se invita desde la pestaña \texttt{Settings} $\rightarrow$ \texttt{Collaborators} en tu repositorio de GitHub, usando su nombre de usuario.
+        \item \textbf{Tipos de accesos comunes:}
+        \begin{itemize}
+            \item \textbf{Read (Lectura):} Solo pueden clonar y hacer \texttt{pull}. Ideal para gente que quieres que vea y pruebe el código, pero sin modificar el original.
+            \item \textbf{Write (Escritura):} Pueden hacer \texttt{push} directamente al repositorio. Es el rol predeterminado para los compañeros de un equipo de desarrollo activo.
+            \item \textbf{Admin:} Tienen control total (pueden borrar el repositorio o agregar a otros usuarios).
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\end{document}
